@@ -1,0 +1,35 @@
+name: Publish initial v0.3.4-rc1 prerelease
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/publish-v034.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    if: github.repository == 'yunyizhang2202/undead-legacy-category-backpack'
+    steps:
+      - name: Checkout source and included installation archive
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Create prerelease if it does not exist
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if gh release view v0.3.4-rc1 >/dev/null 2>&1; then
+            echo "Release v0.3.4-rc1 already exists."
+            exit 0
+          fi
+          test -f RELEASES/UndeadLegacy_CategoryBackpack_v0.3.4-rc1_PUBLIC_SOURCE.zip
+          test -f RELEASE_NOTES_v0.3.4-rc1.md
+          gh release create v0.3.4-rc1             RELEASES/UndeadLegacy_CategoryBackpack_v0.3.4-rc1_PUBLIC_SOURCE.zip             --title "v0.3.4-rc1 - User-tested release candidate"             --notes-file RELEASE_NOTES_v0.3.4-rc1.md             --prerelease             --latest=false
